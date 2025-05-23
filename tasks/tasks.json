@@ -121,7 +121,7 @@
             1
           ],
           "details": "Create a migration file for the User table with columns for id, email, name, created_at, updated_at, and any other user-specific fields. Implement Row-Level Security (RLS) policies to secure user data",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
