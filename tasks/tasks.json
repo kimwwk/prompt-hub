@@ -1,0 +1,600 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Project Repository",
+      "description": "Initialize the project repository with necessary configurations and dependencies.",
+      "details": "Create a new repository on GitHub or a similar platform. Initialize the project with Next.js, Supabase, and Clerk. Set up the project structure and install necessary dependencies.",
+      "testStrategy": "Verify that the project initializes correctly and all dependencies are installed without errors.",
+      "priority": "medium",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create the GitHub Repository",
+          "description": "Set up a new repository on GitHub to host your project code. Initialize it with a README and configure any desired settings (e.g., .gitignore for Node.js).",
+          "dependencies": [],
+          "details": "Go to GitHub, create a new repository, and clone it locally to prepare for project setup.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Initialize Next.js with Clerk-Supabase Accelerator",
+          "description": "Initialize the Next.js project using the clerk-supabase-nextjs accelerator for integrated setup.",
+          "details": "Clone the repository from https://github.com/clerk/clerk-supabase-nextjs and then run 'npm install' or 'yarn install' to initialize the project. This accelerator provides a more integrated starting point for projects using Clerk, Supabase, and Next.js together.",
+          "status": "in-progress",
+          "dependencies": [
+            "1.1"
+          ],
+          "parentTaskId": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement User Authentication with Clerk",
+      "description": "Set up user authentication using Clerk to manage user sessions.",
+      "details": "Integrate Clerk into the Next.js application. Configure Clerk to handle user registration, login, and session management. Ensure that only logged-in users can create, fork, or edit prompts.",
+      "testStrategy": "Test user registration, login, and session persistence. Ensure unauthorized actions are blocked for non-logged-in users.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initial Clerk Setup and Configuration",
+          "description": "Install Clerk, create a Clerk application, and configure Clerk in the project. This includes setting up Clerk's provider and environment variables.",
+          "dependencies": [],
+          "details": "Follow the official Clerk documentation to install the Clerk package, register your application on the Clerk dashboard, and add the necessary configuration (such as API keys) to your project. Integrate the Clerk provider at the root of your application to enable authentication features.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "User Registration Flow",
+          "description": "Implement the user registration (sign-up) flow using Clerk's pre-built or custom components.",
+          "dependencies": [
+            1
+          ],
+          "details": "Add the <SignUp /> component to your application, typically on a dedicated registration page. Ensure that users can create new accounts and that registration data is handled securely.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Login Functionality",
+          "description": "Implement user login using Clerk's <SignIn /> component, allowing users to authenticate with their credentials.",
+          "dependencies": [
+            1
+          ],
+          "details": "Add the <SignIn /> component to a login page. Configure the component to handle various authentication methods supported by Clerk, such as email/password or social logins.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Session Management",
+          "description": "Manage user sessions, including handling sign-in, sign-out, and session persistence across the application.",
+          "dependencies": [
+            3
+          ],
+          "details": "Utilize Clerk's session management features to track authentication state. Use control components like <SignedIn />, <SignedOut />, and <UserButton /> to display user-specific content and provide sign-out functionality.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Authorization Middleware for Protected Routes",
+          "description": "Implement middleware or control components to restrict access to protected routes based on user authentication and authorization status.",
+          "dependencies": [
+            4
+          ],
+          "details": "Use Clerk's <Protect /> or similar control components to guard routes and ensure only authenticated users can access certain pages. Optionally, implement role-based access control if required.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Set Up Supabase Database",
+      "description": "Configure Supabase as the backend database for storing prompts and user data.",
+      "details": "Create a Supabase project and configure the database schema according to the data models specified in the PRD. Set up tables for User, PromptRepo, and PromptVersion.",
+      "testStrategy": "Verify database connectivity and ensure that tables are created correctly. Test basic CRUD operations on each table.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Project initialization and connection configuration",
+          "description": "Set up a new Supabase project and configure the connection details for your application",
+          "dependencies": [],
+          "details": "Create a new Supabase project through the dashboard, generate and securely store API keys, set up environment variables for connection, and initialize the Supabase client in your application code",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "User table schema design",
+          "description": "Design and implement the User table schema with appropriate columns and constraints",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a migration file for the User table with columns for id, email, name, created_at, updated_at, and any other user-specific fields. Implement Row-Level Security (RLS) policies to secure user data",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "PromptRepo table schema design",
+          "description": "Design and implement the PromptRepo table schema with foreign key relationship to User table",
+          "dependencies": [
+            2
+          ],
+          "details": "Create a migration file for the PromptRepo table with columns for id, name, description, user_id (foreign key to User table), created_at, updated_at, and any repository-specific metadata. Set up appropriate indexes and constraints",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "PromptVersion table schema design",
+          "description": "Design and implement the PromptVersion table schema with relationships to PromptRepo table",
+          "dependencies": [
+            3
+          ],
+          "details": "Create a migration file for the PromptVersion table with columns for id, repo_id (foreign key to PromptRepo), version_number, content, metadata, created_at, and any version-specific fields. Implement appropriate constraints and indexes for efficient querying",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Develop Public Browsing Feature",
+      "description": "Implement the feature allowing users to browse all public prompt repositories.",
+      "details": "Create a frontend interface using Next.js to display a list of all public prompt repositories. Implement search and filter functionality based on tags and keywords.",
+      "testStrategy": "Test browsing functionality for both logged-in and anonymous users. Ensure search and filter features work as expected.",
+      "priority": "high",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Basic list view UI implementation",
+          "description": "Create the foundational UI component for displaying browsable items in a list format",
+          "dependencies": [],
+          "details": "Implement a responsive list view that displays repository items with essential metadata. Include item thumbnails, titles, and brief descriptions. Ensure the layout adapts to different screen sizes and follows accessibility guidelines.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Detailed repository view implementation",
+          "description": "Develop a comprehensive view for displaying complete repository item information",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a detailed view that shows all metadata associated with a repository item. Implement navigation between list and detailed views. Include support for various content types and ensure proper rendering of different data formats.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Search functionality implementation",
+          "description": "Build backend and frontend components for searching repository items",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement search algorithms that efficiently query the repository database. Create a search input UI component with autocomplete suggestions. Develop result highlighting and relevance sorting. Ensure search performance remains optimal with large datasets.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Tag-based filtering system",
+          "description": "Implement filtering mechanism based on predefined tags or categories",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "Create a tag management system for categorizing repository items. Develop UI components for selecting and displaying active tag filters. Implement backend logic to filter results based on selected tags. Ensure filters can be combined with search functionality.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Keyword-based filtering implementation",
+          "description": "Develop advanced filtering capabilities using keywords and metadata",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Implement keyword extraction from repository items. Create UI for entering and managing keyword filters. Develop backend logic to filter results based on keywords across different metadata fields. Ensure compatibility with tag-based filtering and search functionality.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Pagination and infinite scrolling implementation",
+          "description": "Create efficient data loading mechanisms for handling large result sets",
+          "dependencies": [
+            1,
+            3,
+            4,
+            5
+          ],
+          "details": "Implement both traditional pagination and infinite scrolling options. Develop backend APIs that support partial data loading with proper cursor management. Create UI components for pagination controls. Optimize performance for smooth scrolling and minimal loading indicators.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement Prompt Repository Creation",
+      "description": "Allow logged-in users to create new prompt repositories.",
+      "details": "Develop a UI for creating new prompt repositories. Implement backend logic to save new repositories to the database with initial metadata.",
+      "testStrategy": "Test repository creation process, ensuring data is saved correctly and visible in the public browsing interface.",
+      "priority": "high",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design and Implement Repository Creation Form UI with Validation",
+          "description": "Develop a user interface for creating repositories, including input fields for required metadata and client-side validation to ensure data integrity before submission.",
+          "dependencies": [],
+          "details": "The form should include fields such as repository name, description, and any other required metadata. Implement validation rules (e.g., required fields, character limits) and provide user feedback for invalid input.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Develop Backend API Endpoint for Saving Repositories",
+          "description": "Create a backend API endpoint that receives repository creation requests, validates the data server-side, and persists the repository information to the database.",
+          "dependencies": [
+            1
+          ],
+          "details": "The API should accept validated data from the UI, perform additional server-side validation as needed, and handle database operations for creating new repository records.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Implement Initial Metadata Handling for Repositories",
+          "description": "Define and manage the initial set of metadata fields required for each repository, ensuring consistent structure and storage in the database.",
+          "dependencies": [
+            2
+          ],
+          "details": "Determine which metadata fields are mandatory and optional, enforce their presence during creation, and ensure they are correctly stored and retrievable from the database.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Integrate User Authentication to Associate Repositories with Creators",
+          "description": "Ensure that repository creation is restricted to authenticated users and that each repository is associated with its creator in the database.",
+          "dependencies": [
+            3
+          ],
+          "details": "Update the backend logic to require authentication for repository creation requests, and store the user ID or relevant identifier alongside the repository record for future reference and access control.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Implement Prompt Versioning System",
+      "description": "Develop the versioning system for prompt repositories.",
+      "details": "Create a mechanism to track changes to prompts by saving each edit as a new version in the PromptVersion table. Include timestamp, editor, and changes in each version record.",
+      "testStrategy": "Test version creation on prompt edits. Verify that version history is accurately maintained and displayed.",
+      "priority": "high",
+      "dependencies": [
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Version Data Model Implementation",
+          "description": "Design and implement the underlying data structures and storage mechanisms to represent and persist versioned entities, including fields for version numbers, timestamps, and change data.",
+          "dependencies": [],
+          "details": "Define the schema for storing versions, ensuring support for metadata and efficient retrieval of version history.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Version Creation on Edit",
+          "description": "Implement logic to automatically create a new version entry whenever an entity is edited, capturing the state before and after the change.",
+          "dependencies": [
+            1
+          ],
+          "details": "Ensure that each edit triggers version creation, incrementing version numbers according to the chosen scheme (e.g., semantic versioning).",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Version History UI",
+          "description": "Develop a user interface component that displays the list of all versions for a given entity, including relevant metadata and navigation controls.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Provide clear visualization of version history, allowing users to browse and select specific versions.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Version Comparison Functionality",
+          "description": "Implement functionality to compare two selected versions, highlighting differences in content and metadata.",
+          "dependencies": [
+            3
+          ],
+          "details": "Enable users to select any two versions from the history and view a detailed comparison of their changes.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Version Metadata Tracking",
+          "description": "Ensure that each version captures and stores relevant metadata such as author, timestamp, change summary, and reason for change.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Extend the data model and UI to display and manage version metadata for auditing and traceability.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Version Rollback Capability",
+          "description": "Implement the ability to restore an entity to a previous version, updating the current state and creating a new version entry to record the rollback.",
+          "dependencies": [
+            3,
+            4,
+            5
+          ],
+          "details": "Allow users to select a version from the history and revert the entity to that state, ensuring data integrity and proper version tracking.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Implement Forking Functionality",
+      "description": "Enable users to fork existing prompt repositories.",
+      "details": "Develop functionality to duplicate a prompt repository and its latest version, linking it to the original repository via forkedFromRepoId.",
+      "testStrategy": "Test the forking process to ensure the new repository is correctly linked and contains the latest version of the original prompt.",
+      "priority": "medium",
+      "dependencies": [
+        6
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Fork UI Implementation",
+          "description": "Design and implement the user interface elements that allow users to initiate the forking process, such as a 'Fork' button and related dialogs or prompts.",
+          "dependencies": [],
+          "details": "This includes placement of the fork button, confirmation dialogs, and any user guidance or tooltips needed to explain the forking process.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Repository Duplication Logic",
+          "description": "Develop the backend logic to duplicate the repository's data, including files, branches, and metadata, ensuring a new repository is created for the user.",
+          "dependencies": [
+            1
+          ],
+          "details": "This involves copying all repository content and settings to a new repository instance under the user's account, maintaining data integrity.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Version Copying Mechanism",
+          "description": "Implement the mechanism to copy all commit history, branches, and tags from the original repository to the forked repository.",
+          "dependencies": [
+            2
+          ],
+          "details": "Ensure that the full version history is preserved so that the forked repository is an exact replica in terms of commit lineage and structure.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Original Repository Linking",
+          "description": "Establish and store a reference from the forked repository back to the original repository to maintain the parent-child relationship.",
+          "dependencies": [
+            3
+          ],
+          "details": "This enables features like pull requests to the upstream repository and visualizes the relationship between the fork and its source.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Fork History/Relationship Visualization",
+          "description": "Create visualizations or UI components that display the relationship between the original and forked repositories, including fork lineage and history.",
+          "dependencies": [
+            4
+          ],
+          "details": "This may include graphs, lists, or other visual elements that help users understand the ancestry and network of forks.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Add Tagging and Metadata System",
+      "description": "Implement a system to tag prompts with model compatibility and domain metadata.",
+      "details": "Develop a tagging system that allows users to add tags to prompts. Implement search and filter functionality based on these tags.",
+      "testStrategy": "Test the tagging system by adding, searching, and filtering prompts based on tags. Ensure tags are stored and retrieved correctly.",
+      "priority": "medium",
+      "dependencies": [
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Tag Data Model Implementation",
+          "description": "Design and implement the underlying data model for tags, ensuring support for many-to-many relationships between tags and repositories, and allowing for flexible metadata storage.",
+          "dependencies": [],
+          "details": "Define database schemas or ORM models for tags, repositories, and their associations. Ensure the model supports efficient querying and scalability.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Tag Creation and Editing UI",
+          "description": "Develop the user interface components for creating, editing, and deleting tags, including validation and normalization to prevent duplicates.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement forms and controls for tag management, integrate with the backend, and provide real-time feedback to users.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Tag Association with Repositories",
+          "description": "Enable users to associate and disassociate tags with repositories through the UI and backend, updating the data model accordingly.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implement UI elements for tagging repositories, handle backend logic for updating associations, and ensure data integrity.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "Tag-Based Search Functionality",
+          "description": "Implement efficient search algorithms and UI components to allow users to search repositories by tags, supporting partial matches and multiple tag queries.",
+          "dependencies": [
+            1,
+            3
+          ],
+          "details": "Optimize database queries or use search indexes to ensure fast retrieval, and design intuitive search interfaces.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Tag Filtering and Categorization",
+          "description": "Develop features for filtering repositories by tags and categorizing tags (e.g., by type or popularity) to enhance discoverability and user experience.",
+          "dependencies": [
+            1,
+            4
+          ],
+          "details": "Implement UI filters, backend logic for tag categorization, and display tag statistics or groupings as needed.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Develop Copy/Download Functionality",
+      "description": "Allow users to copy prompt text or download it as a .txt file.",
+      "details": "Add UI elements for copying prompt text to the clipboard and downloading it as a .txt file. Ensure compatibility across different browsers.",
+      "testStrategy": "Test copy and download functionality on various browsers to ensure reliability and ease of use.",
+      "priority": "medium",
+      "dependencies": [
+        4
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement cross-browser clipboard copy functionality",
+          "description": "Create a robust clipboard copy implementation that works across different browsers using both modern Clipboard API and fallback methods",
+          "dependencies": [],
+          "details": "Implement clipboard functionality using navigator.clipboard.writeText() as the primary method with document.execCommand() as fallback for older browsers. Handle permissions and browser-specific limitations. Test in Chrome, Firefox, Safari, and Edge. Include feature detection to determine which method to use based on browser support.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Develop text file generation and download mechanism",
+          "description": "Create functionality to generate text files from content and trigger downloads across browsers",
+          "dependencies": [],
+          "details": "Implement file generation using Blob API to create text files. Create download functionality using URL.createObjectURL() and programmatically triggering downloads with anchor elements. Handle different MIME types for text files. Ensure proper cleanup of object URLs after download to prevent memory leaks.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Add user feedback and error handling systems",
+          "description": "Implement comprehensive feedback mechanisms and error handling for both clipboard and download operations",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create visual feedback indicators for successful/failed operations. Implement error handling for clipboard permission denials and browser compatibility issues. Add appropriate error messages for users when operations fail. Include accessibility considerations for feedback mechanisms. Implement logging for debugging purposes.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Implement Basic Moderation Tools",
+      "description": "Develop tools for basic moderation, such as deleting spam or inappropriate content.",
+      "details": "Create an admin interface to manage prompt repositories, including the ability to delete or flag content. Implement user blocking if necessary.",
+      "testStrategy": "Test moderation tools by simulating spam content and verifying that it can be effectively managed by an admin.",
+      "priority": "medium",
+      "dependencies": [
+        4,
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Admin Dashboard UI Development",
+          "description": "Create a centralized moderator dashboard with customizable views for content review",
+          "dependencies": [],
+          "details": "Develop a unified interface that allows moderators to review flagged content, filter and sort by severity or type, and take appropriate actions. Include customizable views to help moderators prioritize content based on urgency and violation type. Ensure the dashboard provides a comprehensive overview of platform activity and moderation status.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "Content Flagging System Implementation",
+          "description": "Build a system allowing users to flag inappropriate content with specific reasons",
+          "dependencies": [],
+          "details": "Implement a dialogue box that appears when users click the flag button, containing checkboxes for different violation types. Create functionality to display a list of users who flagged content and their reasons. Include options for users to dispute flags and potentially resolve issues through third-party mediation. Ensure the system provides immediate feedback to users when their content is flagged.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Repository Deletion Functionality",
+          "description": "Develop secure content removal capabilities with appropriate authorization checks",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create functionality for moderators to delete or hide inappropriate content based on valid flags. Implement proper authorization checks to ensure only authorized moderators can perform deletion actions. Include options for both temporary hiding and permanent deletion of content, with appropriate confirmation steps to prevent accidental removals.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "User Management Interface",
+          "description": "Build tools for moderators to manage user accounts and apply appropriate sanctions",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop interface components for moderators to view user history, previous violations, and apply appropriate sanctions ranging from warnings to account suspension. Include functionality to review user appeals and potentially restore privileges. Ensure proper role-based access control so only authorized moderators can access sensitive user management functions.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Moderation Action Logging System",
+          "description": "Implement comprehensive logging of all moderation actions for accountability",
+          "dependencies": [
+            1,
+            3,
+            4
+          ],
+          "details": "Create a system that logs all moderation actions including content reviews, flag validations, content removals, and user sanctions. Ensure logs contain timestamps, moderator identification, action details, and reasoning. Implement secure storage for these logs and provide interfaces for authorized personnel to review moderation history for accountability and transparency.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Notification System for Moderators",
+          "description": "Develop real-time alerts for moderators about flagged content requiring attention",
+          "dependencies": [
+            1,
+            2,
+            5
+          ],
+          "details": "Implement a notification system that alerts moderators about new flagged content, prioritizing by severity. Create customizable notification preferences allowing moderators to receive alerts through multiple channels (email, in-app, etc.). Include escalation mechanisms for content that requires immediate attention, and develop a system to distribute workload among available moderators.",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

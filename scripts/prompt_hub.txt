@@ -1,0 +1,125 @@
+<context>
+# Overview  
+Prompt Hub is an open, community-first platform to share, fork, and remix AI/LLM prompts—a "GitHub for prompts." It solves the pain point of scattered, unorganized high-quality prompts by providing a central repository where anyone can find, edit, and reuse prompts. This benefits AI enthusiasts, prompt engineers, content creators, and enterprises who want to collaborate on or quickly adopt verified prompts.
+
+# Core Features  
+1. **Public Prompt Repositories**  
+   - What: Each repository holds one prompt (text) along with descriptions, usage notes, version history, and forks.  
+   - Why: Simplifies how we share, discover, and evolve prompts without a complex code structure.  
+   - How: One prompt = one repo. Users can browse all public repos freely. Logged-in users can create/fork/modify their own or existing prompts.  
+
+2. **Versioning & Forking**  
+   - What: Each prompt repository maintains a linear edit history, plus the ability to fork a prompt.  
+   - Why: Encourages community collaboration and ensures prompt evolution is tracked (similar to version control, but simplified).  
+   - How: On each edit, a new version entry is saved (timestamp, editor, changes). Forking replicates the latest version to a new repo, marking its “forked from” lineage.  
+
+3. **Tags & Metadata**  
+   - What: Ability to tag prompts by model compatibility (e.g., GPT-4, Llama) or domain (e.g., productivity, marketing).  
+   - Why: Helps users filter relevant prompts quickly and handle model-specific differences.  
+   - How: Simple tagging system stored in the database; search and filter UI built on these tags.  
+
+4. **Open Browsing & Community Engagement**  
+   - What: Anyone (even without logging in) can view and search all prompts to encourage exploration and adoption.  
+   - Why: Low barriers increase community engagement and potential contributions.  
+   - How: Public browsing with search, star/like, or basic feedback. Optional login for editing features.  
+
+5. **Copy/Download Functionality**  
+   - What: Users can easily copy prompt text or download it as .txt for immediate use in their AI tool of choice.  
+   - Why: Quick adoption—no friction in transferring prompts elsewhere.  
+   - How: Simple UI button that copies text to clipboard or offers a downloadable file.  
+
+</context>
+
+<PRD>
+# Technical Architecture  
+1. **System Components**  
+   - Frontend: Built with a modern framework (e.g., Next.js/React) for browsing, forking, editing prompts.  
+   - Backend:  
+     - Supabase for data storage (Postgres)  
+     - Clerk for auth (manages user sessions)  
+   - Versioning:  
+     - Internal DB-based approach (not raw Git).  
+     - Each prompt repo has an ID; each edit creates a new version record in "PromptVersions."  
+   - APIs/Integrations:  
+     - Supabase auto-generated REST or GraphQL endpoints for basic CRUD.  
+     - Future expansions for external integrations (plugins, etc.) once MVP is stable.  
+
+2. **Data Models**  
+   - User: (id, email, username, etc.)  
+   - PromptRepo: (id, title, authorId, tags, createdAt, updatedAt, forkedFromRepoId)  
+   - PromptVersion: (id, repoId, promptText, description, editorId, createdAt)  
+
+3. **Infrastructure Requirements**  
+   - Hosted on a serverless or PaaS solution (e.g., Vercel/Netlify + Supabase).  
+   - Minimal overhead for early MVP; can scale with user demand.  
+
+# Development Roadmap  
+1. **MVP Requirements**  
+   - Public, open browsing of prompt repositories.  
+   - Simple user registration (Clerk) for creating/forking/editing repos.  
+   - Basic UI for prompt submission, versioning, and forking.  
+   - Tagging system for model/domain metadata.  
+   - Copy/download prompts.  
+   - Basic moderation (e.g., admin-level deletion of spam/inappropriate content).  
+
+2. **Future Enhancements**  
+   - Integration with AI tools (one-click import).  
+   - Collections or “notebooks” to group related prompts.  
+   - Private/organization repositories (enterprise features).  
+   - Advanced discussion, comments, or rating systems.  
+   - More robust version-control (semi-git-like merges).  
+   - Automated prompt testing, previewing results from multiple models.  
+
+3. **Scope and Detailing**  
+   - Each MVP feature should be atomic and testable:  
+     - Registration system,  
+     - Public browsing,  
+     - Repo creation, submission, forking,  
+     - Version tracking,  
+     - Tagging/metadata.  
+   - Verify everything works end-to-end before layering additional functionality (like advanced integrations or private repos).  
+
+# Logical Dependency Chain  
+1. **Foundation**  
+   - Set up Supabase, Clerk, and a basic Next.js/React frontend.  
+   - Data models for users, prompt repos, prompt versions.  
+2. **User Authentication & Public Browsing**  
+   - Allow anonymous users to browse, but require login to edit or create.  
+   - Add basic search/filter for prompts by tags or keywords.  
+3. **Repo Creation & Versioning**  
+   - Implement base CRUD for prompts.  
+   - Implement the mechanism to track versions (PromptVersions table).  
+4. **Forking**  
+   - Implement the ability to duplicate a prompt repo (with its latest version) and link “forkedFromRepoId.”  
+5. **Enhance UI/UX**  
+   - Add copy/download features.  
+   - Provide a simple “star” or “like” system to prioritize refined prompts.  
+6. **Moderation & Admin Tools**  
+   - Basic control panel to remove spam or block users if necessary.  
+7. **Iterate**  
+   - Gather feedback, refine, test, prepare for next features (collections, advanced versioning, etc.).  
+
+# Risks and Mitigations  
+- **Technical Complexity (Versioning)**  
+  - Risk: Implementing a full Git system is too complex for MVP.  
+  - Mitigation: Use a simpler DB approach to store each "version" as a record—no merges or branching needed initially.  
+- **Overscoping & Feature Creep**  
+  - Risk: Trying to implement everything (testing environment, advanced merges) from the start.  
+  - Mitigation: Stick to the core MVP, gather community feedback, and iterate.  
+- **Low Community Engagement**  
+  - Risk: No traction if content isn’t seeded.  
+  - Mitigation: Seed high-quality prompts, encourage initial user base with curated examples.  
+- **Quality Control**  
+  - Risk: Spam or low-value prompts cluttering the site.  
+  - Mitigation: Basic moderation tools and reported-content flows until advanced solutions can be built.  
+
+# Appendix  
+- **Research Findings**:  
+  - Existing solutions (FlowGPT, PromptBase) focus on either curated flows or paid prompts; we differentiate by being free, open, repo-based.  
+  - PromptHub-like platforms exist but often are enterprise-centric.  
+- **Technical Specs**:  
+  - Next.js + Supabase + Clerk for MVP is tested and straightforward.  
+  - Consider minimal discrete microservices—front/back can remain single app for simplicity.  
+  - Deploy on Vercel for quick iteration and immediate user testing.  
+
+</PRD>
