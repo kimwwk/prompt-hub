@@ -36,3 +36,10 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Taskmaster and AI related files
+.taskmasterconfig
+scripts/task-complexity-report.json
+tasks/
+.roo/
+.cursor/
