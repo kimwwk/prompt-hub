@@ -88,8 +88,9 @@ export default function Home() {
                   ))}
                 </div>
               )}
-              {/* Add a link to a detailed view page later (Subtask 4.2) */}
-              {/* e.g., <a href={`/repo/${repo.id}`} className="text-blue-500 hover:underline mt-2 inline-block">View Details</a> */}
+              <a href={`/repo/${repo.id}`} className="text-blue-600 hover:text-blue-800 hover:underline mt-3 inline-block text-sm font-medium">
+                View Details &rarr;
+              </a>
             </div>
           ))}
         </div>
