@@ -16,7 +16,20 @@ interface PromptRepository {
 export default function Home() {
   const [repositories, setRepositories] = useState<PromptRepository[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const { session } = useSession(); // Still useful for creating the Supabase client
+
+  // Debounce effect for search term
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchTerm]);
 
   // Create a custom supabase client that injects the Clerk Supabase token if available
   function createClerkSupabaseClient() {
@@ -35,14 +48,21 @@ export default function Home() {
   const client = createClerkSupabaseClient();
 
   useEffect(() => {
-    async function loadPublicRepositories() {
+    async function loadPublicRepositories(currentSearchTerm: string) {
       setLoading(true);
-      // Fetch only public repositories
-      const { data, error } = await client
+      let query = client
         .from("prompt_repositories")
         .select("id, name, description, tags, model_compatibility")
-        .eq("is_public", true)
-        .order("created_at", { ascending: false }); // Optional: order by creation date
+        .eq("is_public", true);
+
+      if (currentSearchTerm) {
+        // Search in name and description. For more advanced search, consider tsvector.
+        query = query.or(`name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`);
+      }
+      
+      query = query.order("created_at", { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching repositories:", error);
@@ -53,12 +73,22 @@ export default function Home() {
       setLoading(false);
     }
 
-    loadPublicRepositories();
-  }, [session]); // Re-fetch if session changes, though for public data it might not be strictly necessary
+    loadPublicRepositories(debouncedSearchTerm);
+  }, [session, debouncedSearchTerm, client]); // Include client in dependencies
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">Public Prompt Repositories</h1>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search repositories by name or description..."
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
       {loading && <p className="text-center">Loading repositories...</p>}
 
