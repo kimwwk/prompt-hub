@@ -1,6 +1,6 @@
 # Task ID: 1
 # Title: Setup Project Repository
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: medium
 # Description: Initialize the project repository with necessary configurations and dependencies.
@@ -17,7 +17,7 @@ Verify that the project initializes correctly and all dependencies are installed
 ### Details:
 Go to GitHub, create a new repository, and clone it locally to prepare for project setup.
 
-## 2. Initialize Next.js with Clerk-Supabase Accelerator [in-progress]
+## 2. Initialize Next.js with Clerk-Supabase Accelerator [done]
 ### Dependencies: 1.1
 ### Description: Initialize the Next.js project using the clerk-supabase-nextjs accelerator for integrated setup.
 ### Details:

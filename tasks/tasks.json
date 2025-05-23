@@ -8,7 +8,7 @@
       "testStrategy": "Verify that the project initializes correctly and all dependencies are installed without errors.",
       "priority": "medium",
       "dependencies": [],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -23,7 +23,7 @@
           "title": "Initialize Next.js with Clerk-Supabase Accelerator",
           "description": "Initialize the Next.js project using the clerk-supabase-nextjs accelerator for integrated setup.",
           "details": "Clone the repository from https://github.com/clerk/clerk-supabase-nextjs and then run 'npm install' or 'yarn install' to initialize the project. This accelerator provides a more integrated starting point for projects using Clerk, Supabase, and Next.js together.",
-          "status": "in-progress",
+          "status": "done",
           "dependencies": [
             "1.1"
           ],
@@ -41,7 +41,7 @@
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -49,7 +49,7 @@
           "description": "Install Clerk, create a Clerk application, and configure Clerk in the project. This includes setting up Clerk's provider and environment variables.",
           "dependencies": [],
           "details": "Follow the official Clerk documentation to install the Clerk package, register your application on the Clerk dashboard, and add the necessary configuration (such as API keys) to your project. Integrate the Clerk provider at the root of your application to enable authentication features.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -59,7 +59,7 @@
             1
           ],
           "details": "Add the <SignUp /> component to your application, typically on a dedicated registration page. Ensure that users can create new accounts and that registration data is handled securely.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -69,7 +69,7 @@
             1
           ],
           "details": "Add the <SignIn /> component to a login page. Configure the component to handle various authentication methods supported by Clerk, such as email/password or social logins.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -79,7 +79,7 @@
             3
           ],
           "details": "Utilize Clerk's session management features to track authentication state. Use control components like <SignedIn />, <SignedOut />, and <UserButton /> to display user-specific content and provide sign-out functionality.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -89,7 +89,7 @@
             4
           ],
           "details": "Use Clerk's <Protect /> or similar control components to guard routes and ensure only authenticated users can access certain pages. Optionally, implement role-based access control if required.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
