@@ -111,7 +111,7 @@
           "description": "Set up a new Supabase project and configure the connection details for your application",
           "dependencies": [],
           "details": "Create a new Supabase project through the dashboard, generate and securely store API keys, set up environment variables for connection, and initialize the Supabase client in your application code",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
