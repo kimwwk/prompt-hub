@@ -18,6 +18,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // const [allTags, setAllTags] = useState<string[]>([]); // Removed for now
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { session } = useSession(); // Still useful for creating the Supabase client
 
   // Debounce effect for search term
@@ -48,7 +50,7 @@ export default function Home() {
   const client = createClerkSupabaseClient();
 
   useEffect(() => {
-    async function loadPublicRepositories(currentSearchTerm: string) {
+    async function loadPublicRepositories(currentSearchTerm: string, currentSelectedTags: string[]) {
       setLoading(true);
       let query = client
         .from("prompt_repositories")
@@ -56,8 +58,13 @@ export default function Home() {
         .eq("is_public", true);
 
       if (currentSearchTerm) {
-        // Search in name and description. For more advanced search, consider tsvector.
         query = query.or(`name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`);
+      }
+
+      if (currentSelectedTags.length > 0) {
+        // Use 'contains' (for @> operator) for array column 'tags'
+        // This means the repository's tags array must contain ALL selected tags
+        query = query.contains("tags", currentSelectedTags);
       }
       
       query = query.order("created_at", { ascending: false });
@@ -73,8 +80,21 @@ export default function Home() {
       setLoading(false);
     }
 
-    loadPublicRepositories(debouncedSearchTerm);
-  }, [session, debouncedSearchTerm, client]); // Include client in dependencies
+    loadPublicRepositories(debouncedSearchTerm, selectedTags);
+  }, [session, debouncedSearchTerm, selectedTags, client]);
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTags(prevTags =>
+      prevTags.includes(tag)
+        ? prevTags.filter(t => t !== tag) // Deselect if already selected
+        : [...prevTags, tag] // Select if not selected
+    );
+  };
+
+  // Derive unique tags from fetched repositories for the filter UI
+  const uniqueTags = Array.from(
+    new Set(repositories.flatMap(repo => repo.tags || []))
+  ).sort();
 
   return (
     <div className="container mx-auto p-4">
@@ -89,6 +109,25 @@ export default function Home() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
+      {uniqueTags.length > 0 && (
+        <div className="mb-6 flex flex-wrap gap-2 items-center">
+          <span className="font-semibold text-sm mr-2">Filter by Tags:</span>
+          {uniqueTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => handleTagClick(tag)}
+              className={`px-3 py-1 text-xs font-medium rounded-full border
+                ${selectedTags.includes(tag)
+                  ? 'bg-blue-500 text-white border-blue-500'
+                  : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading && <p className="text-center">Loading repositories...</p>}
 
