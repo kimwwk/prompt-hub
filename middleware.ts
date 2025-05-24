@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/ssr(.*)', // Example page from accelerator
+  '/api/webhooks(.*)', // Make webhook route public
 ]);
 
 // This Middleware does not protect any routes by default.

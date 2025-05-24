@@ -84,3 +84,8 @@ Feel free to create a support thread on our [Discord](https://clerk.com/discord)
 You can discuss ideas, ask questions, and meet others from the community in our [Discord](https://discord.com/invite/b5rXHjAg7A).
 
 If you prefer, you can also find support through our [Twitter](https://twitter.com/ClerkDev), or you can [email](mailto:support@clerk.dev) us!
+
+## Others
+
+`ngrok http --url=large-lately-escargot.ngrok-free.app 3000` 
+`task-master list --with-subtasks`

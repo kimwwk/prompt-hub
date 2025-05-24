@@ -43,8 +43,8 @@ export default function Home() {
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
       {
         async accessToken() {
-          const supabaseAccessToken = await session?.getToken({ template: 'supabase' });
-          return supabaseAccessToken ?? null;
+          const clerkSessionToken = await session?.getToken(); // Get the standard Clerk session token
+          return clerkSessionToken ?? null;
         },
       }
     );
