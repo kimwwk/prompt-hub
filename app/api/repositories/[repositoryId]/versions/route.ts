@@ -90,3 +90,55 @@ export async function POST(
     return NextResponse.json({ error: 'An internal server error occurred', details: errorMessage }, { status: 500 });
   }
 }
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { repositoryId: string } }
+) {
+  try {
+    // Optional: Add auth check if only authenticated users can view versions
+    // const { userId } = await auth();
+    // if (!userId) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // }
+
+    const { repositoryId } = params;
+    if (!repositoryId) {
+      return NextResponse.json({ error: 'Repository ID is required' }, { status: 400 });
+    }
+
+    const { data: versions, error } = await supabase
+      .from('prompt_versions')
+      .select(`
+        *,
+        profiles (
+          full_name,
+          email
+        )
+      `)
+      .eq('repository_id', repositoryId)
+      .order('version_number', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching versions:', error);
+      return NextResponse.json({ error: 'Failed to fetch versions', details: error.message }, { status: 500 });
+    }
+
+    // The join with profiles might return profiles as an object if user_id is unique in profiles
+    // or an array if it's not. Adjusting to ensure editor is an object.
+    const formattedVersions = versions.map(v => {
+      const editorProfile = Array.isArray(v.profiles) ? v.profiles[0] : v.profiles;
+      return {
+        ...v,
+        editor: editorProfile ? { full_name: editorProfile.full_name, email: editorProfile.email } : null,
+        profiles: undefined, // remove the original profiles field
+      };
+    });
+
+
+    return NextResponse.json(formattedVersions, { status: 200 });
+  } catch (error) {
+    console.error('Error in GET /api/repositories/[repositoryId]/versions:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: 'An internal server error occurred', details: errorMessage }, { status: 500 });
+  }
+}

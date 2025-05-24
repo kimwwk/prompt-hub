@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
+import VersionHistoryList from "../../components/VersionHistoryList"; // Import the new component
 import { useParams, useRouter } from 'next/navigation'; // Import useRouter for back navigation
 
 // Define types for our data
@@ -22,7 +23,7 @@ interface PromptRepositoryDetails {
   tags: string[] | null;
   model_compatibility: string[] | null;
   created_at: string;
-  prompt_versions: PromptVersion[];
+  // prompt_versions: PromptVersion[]; // Will be handled by VersionHistoryList
 }
 
 export default function RepositoryDetailPage() {
@@ -55,9 +56,9 @@ export default function RepositoryDetailPage() {
     async function loadRepositoryDetails() {
       setLoading(true);
       // Fetch repository details
-      const { data: repoData, error: repoError } = await client
+      const { data: repoData, error: repoError } = await client // Remove prompt_versions from select
         .from("prompt_repositories")
-        .select("*, prompt_versions(*)") // Fetch repository and all its versions
+        .select("*")
         .eq("id", id as string)
         .eq("is_public", true) // Ensure it's public or user has access (RLS handles this)
         .single(); // Expecting a single repository
@@ -66,10 +67,6 @@ export default function RepositoryDetailPage() {
         console.error("Error fetching repository details:", repoError);
         setRepository(null);
       } else if (repoData) {
-        // Sort versions by version_number descending if needed
-        if (repoData.prompt_versions) {
-          repoData.prompt_versions.sort((a: PromptVersion, b: PromptVersion) => b.version_number - a.version_number);
-        }
         setRepository(repoData as PromptRepositoryDetails);
       }
       setLoading(false);
@@ -123,38 +120,8 @@ export default function RepositoryDetailPage() {
         </div>
       )}
 
-      <h2 className="text-2xl font-semibold mb-4">Versions</h2>
-      {repository.prompt_versions && repository.prompt_versions.length > 0 ? (
-        <div className="space-y-6">
-          {repository.prompt_versions.map((version) => (
-            <div key={version.id} className="border p-4 rounded-lg shadow">
-              <h3 className="text-lg font-semibold">Version {version.version_number}</h3>
-              <p className="text-xs text-gray-500 mb-2">Created: {new Date(version.created_at).toLocaleString()}</p>
-              <pre className="bg-gray-50 p-3 rounded whitespace-pre-wrap text-sm mb-2">{version.prompt_text}</pre>
-              {version.variables && (
-                <div className="mb-2">
-                  <h4 className="font-medium text-sm">Variables:</h4>
-                  <pre className="bg-gray-100 p-2 rounded text-xs">{JSON.stringify(version.variables, null, 2)}</pre>
-                </div>
-              )}
-              {version.model_settings && (
-                <div className="mb-2">
-                  <h4 className="font-medium text-sm">Model Settings:</h4>
-                  <pre className="bg-gray-100 p-2 rounded text-xs">{JSON.stringify(version.model_settings, null, 2)}</pre>
-                </div>
-              )}
-              {version.notes && (
-                <div>
-                  <h4 className="font-medium text-sm">Notes:</h4>
-                  <p className="text-sm text-gray-600">{version.notes}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No versions found for this repository.</p>
-      )}
+      {/* Render the VersionHistoryList component */}
+      {id && typeof id === 'string' && <VersionHistoryList repositoryId={id} />}
     </div>
   );
 }
