@@ -30,6 +30,8 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
   const [error, setError] = useState<string | null>(null);
   const [selectedForCompare, setSelectedForCompare] = useState<Version[]>([]);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
+  const [rollbackLoading, setRollbackLoading] = useState<string | null>(null); // Store ID of version being rolled back
+  const [rollbackError, setRollbackError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!repositoryId) return;
@@ -37,13 +39,17 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
     const fetchVersions = async () => {
       setLoading(true);
       setError(null);
+      // Also clear rollback error on refresh
+      setRollbackError(null);
       try {
         const response = await fetch(`/api/repositories/${repositoryId}/versions`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || `Failed to fetch versions: ${response.statusText}`);
         }
-        const data = await response.json();
+        let data = await response.json();
+        // Ensure versions are sorted by version_number descending
+        data.sort((a: Version, b: Version) => b.version_number - a.version_number);
         setVersions(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -70,6 +76,62 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
     });
   };
 
+  const handleRollback = async (versionToRollbackTo: Version) => {
+    if (!window.confirm(`Are you sure you want to roll back to version ${versionToRollbackTo.version_number}? This will create a new version based on this one.`)) {
+      return;
+    }
+    setRollbackLoading(versionToRollbackTo.id);
+    setRollbackError(null);
+    try {
+      const response = await fetch(`/api/repositories/${repositoryId}/versions/${versionToRollbackTo.id}/rollback`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to roll back: ${response.statusText}`);
+      }
+      // Refresh versions list
+      // A bit of a delay to allow DB to update if needed, or could re-fetch directly
+      setTimeout(() => {
+         const event = new Event('versionsUpdated'); // Custom event
+         window.dispatchEvent(event);
+         // Re-trigger fetchVersions by changing a dependency or calling it directly
+         // For simplicity, we'll rely on a potential parent component re-render or manual refresh for now
+         // Or, more robustly:
+         setVersions([]); // Clear current versions to force re-fetch if repositoryId dependency is used correctly
+         // Or call fetchVersions directly if it's memoized or safe to call
+         // For now, let's just clear and let useEffect re-fetch
+         // This requires fetchVersions to be callable or part of useEffect dependency
+         // A better way would be to have a refresh function passed as prop or use a state management library
+         // For this example, we'll just log and suggest a manual refresh or implement a simple re-fetch.
+         console.log("Rollback successful, ideally refresh version list here.");
+         // Re-fetch (simple way, might cause multiple calls if not careful)
+         if (repositoryId) { // Re-fetch logic from useEffect
+            const fetchAgain = async () => {
+                setLoading(true); // Show loading for the list
+                const res = await fetch(`/api/repositories/${repositoryId}/versions`);
+                if(res.ok) {
+                    let data = await res.json();
+                    data.sort((a: Version, b: Version) => b.version_number - a.version_number);
+                    setVersions(data);
+                } else {
+                    setError('Failed to refresh versions after rollback.');
+                }
+                setLoading(false);
+            };
+            fetchAgain();
+         }
+      }, 500);
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during rollback';
+      setRollbackError(errorMessage);
+      console.error("Error during rollback:", err);
+    } finally {
+      setRollbackLoading(null);
+    }
+  };
+
   if (loading) {
     return <p className="text-center py-4">Loading version history...</p>;
   }
@@ -84,6 +146,7 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
 
   return (
     <>
+      {rollbackError && <p className="text-center py-2 text-red-600">Rollback Error: {rollbackError}</p>}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Version History</h2>
         <div className="overflow-x-auto">
@@ -135,7 +198,13 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
                     >
                       Compare
                     </button>
-                    <button disabled className="text-red-600 hover:text-red-900 opacity-50 cursor-not-allowed">Rollback</button>
+                    <button
+                      onClick={() => handleRollback(version)}
+                      disabled={rollbackLoading === version.id || (versions.length > 0 && version.id === versions[0].id)} // Disable for latest version
+                      className={`text-red-600 hover:text-red-900 ${(rollbackLoading === version.id || (versions.length > 0 && version.id === versions[0].id)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {rollbackLoading === version.id ? 'Rolling back...' : 'Rollback'}
+                    </button>
                   </td>
                 </tr>
               ))}
