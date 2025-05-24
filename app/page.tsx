@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react"; // Import useMemo
 import { useSession } from "@clerk/nextjs"; // useUser not strictly needed for public browsing
 import { createClient } from "@supabase/supabase-js";
 
@@ -18,9 +18,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  // const [allTags, setAllTags] = useState<string[]>([]); // Removed for now
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
   const { session } = useSession(); // Still useful for creating the Supabase client
+
+  const ITEMS_PER_PAGE = 9; // Display 9 items per page (3x3 grid)
 
   // Debounce effect for search term
   useEffect(() => {
@@ -47,48 +50,69 @@ export default function Home() {
     );
   }
 
-  const client = createClerkSupabaseClient();
+  const client = useMemo(() => createClerkSupabaseClient(), [session]); // Memoize the client
 
   useEffect(() => {
-    async function loadPublicRepositories(currentSearchTerm: string, currentSelectedTags: string[]) {
-      setLoading(true);
+    async function loadPublicRepositories(pageToLoad: number, currentSearchTerm: string, currentSelectedTags: string[]) {
+      if (pageToLoad === 0) setLoading(true); // Full loading state only for initial load or filter change
+
+      const from = pageToLoad * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
       let query = client
         .from("prompt_repositories")
-        .select("id, name, description, tags, model_compatibility")
-        .eq("is_public", true);
+        .select("id, name, description, tags, model_compatibility", { count: 'exact' }) // Request count for pagination
+        .eq("is_public", true)
+        .range(from, to);
 
-      if (currentSearchTerm) {
-        query = query.or(`name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`);
-      }
+      // if (currentSearchTerm) {
+      //   query = query.or(`name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`);
+      // }
 
-      if (currentSelectedTags.length > 0) {
-        // Use 'contains' (for @> operator) for array column 'tags'
-        // This means the repository's tags array must contain ALL selected tags
-        query = query.contains("tags", currentSelectedTags);
-      }
+      // if (currentSelectedTags.length > 0) {
+      //   query = query.contains("tags", currentSelectedTags);
+      // }
       
       query = query.order("created_at", { ascending: false });
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) {
         console.error("Error fetching repositories:", error);
-        setRepositories([]); // Set to empty array on error
+        if (pageToLoad === 0) setRepositories([]);
+        setHasMoreItems(false);
       } else if (data) {
-        setRepositories(data);
+        setRepositories(prevRepos => pageToLoad === 0 ? data : [...prevRepos, ...data]);
+        setHasMoreItems(data.length === ITEMS_PER_PAGE && (count ? (from + data.length) < count : true));
+      } else {
+        if (pageToLoad === 0) setRepositories([]);
+        setHasMoreItems(false);
       }
-      setLoading(false);
+      if (pageToLoad === 0) setLoading(false);
     }
 
-    loadPublicRepositories(debouncedSearchTerm, selectedTags);
-  }, [session, debouncedSearchTerm, selectedTags, client]);
+    loadPublicRepositories(currentPage, debouncedSearchTerm, selectedTags);
+  }, [session, debouncedSearchTerm, selectedTags, client, currentPage]);
+
+
+  // Reset page to 0 when search term or tags change
+  useEffect(() => {
+    setCurrentPage(0);
+    setRepositories([]); // Clear existing repositories before new filter applies
+    setHasMoreItems(true); // Assume there might be more items with new filter
+  }, [debouncedSearchTerm, selectedTags]);
+
 
   const handleTagClick = (tag: string) => {
     setSelectedTags(prevTags =>
       prevTags.includes(tag)
-        ? prevTags.filter(t => t !== tag) // Deselect if already selected
-        : [...prevTags, tag] // Select if not selected
+        ? prevTags.filter(t => t !== tag)
+        : [...prevTags, tag]
     );
+  };
+
+  const loadMoreItems = () => {
+    setCurrentPage(prevPage => prevPage + 1);
   };
 
   // Derive unique tags from fetched repositories for the filter UI
@@ -129,9 +153,13 @@ export default function Home() {
         </div>
       )}
 
-      {loading && <p className="text-center">Loading repositories...</p>}
+      {loading && currentPage === 0 && <p className="text-center">Loading repositories...</p>}
 
-      {!loading && repositories.length > 0 && (
+      {!loading && repositories.length === 0 && currentPage === 0 && (
+         <p className="text-center text-gray-500">No public repositories found matching your criteria.</p>
+      )}
+
+      {repositories.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {repositories.map((repo) => (
             <div key={repo.id} className="border p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
@@ -164,9 +192,20 @@ export default function Home() {
           ))}
         </div>
       )}
+      
+      {!loading && hasMoreItems && repositories.length > 0 && (
+        <div className="text-center mt-8">
+          <button
+            onClick={loadMoreItems}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Load More
+          </button>
+        </div>
+      )}
 
-      {!loading && repositories.length === 0 && (
-        <p className="text-center text-gray-500">No public repositories found.</p>
+      {!loading && !hasMoreItems && repositories.length > 0 && currentPage > 0 && (
+         <p className="text-center text-gray-500 mt-8">No more repositories to load.</p>
       )}
     </div>
   );
