@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
         .from('profiles')
         .insert([
           {
-            id: userData.id, // Use the Clerk user ID, assuming it's also the Supabase auth.users.id
+            id: randomUUID(), // Use the Clerk user ID, assuming it's also the Supabase auth.users.id
             email: email,
             full_name: fullName,
             clerk_id: userData.id, // Also store clerk_id for explicit mapping if needed
