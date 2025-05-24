@@ -5,8 +5,9 @@ import { useState, FormEvent } from 'react';
 export default function CreateRepositoryPage() {
   const [repoName, setRepoName] = useState('');
   const [description, setDescription] = useState('');
-  const [errors, setErrors] = useState<{ repoName?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ repoName?: string; description?: string; api?: string }>({});
   const [formMessage, setFormMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: { repoName?: string; description?: string } = {};
@@ -29,21 +30,42 @@ export default function CreateRepositoryPage() {
     return isValid;
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrors({});
     setFormMessage('');
+    setIsSubmitting(true);
 
     if (validateForm()) {
-      console.log('Form data:', { repoName, description });
-      // In a real app, you would send this data to your backend API
-      setFormMessage('Validation successful. (Simulating submission to console)');
-      // Optionally reset form fields
-      // setRepoName('');
-      // setDescription('');
+      try {
+        const response = await fetch('/api/repo/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ repoName, description }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          setFormMessage(result.message || 'Repository created successfully!');
+          setRepoName('');
+          setDescription('');
+          // Optionally, redirect or perform other actions on success
+        } else {
+          setErrors({ api: result.error || 'An unknown error occurred.' });
+          setFormMessage('Failed to create repository. Please try again.');
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        setErrors({ api: 'An error occurred while submitting the form.' });
+        setFormMessage('An unexpected error occurred. Please try again.');
+      }
     } else {
       setFormMessage('Please correct the errors above.');
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -87,14 +109,18 @@ export default function CreateRepositoryPage() {
         <div className="flex items-center justify-between">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+            disabled={isSubmitting}
           >
-            Create Repository
+            {isSubmitting ? 'Creating...' : 'Create Repository'}
           </button>
         </div>
 
-        {formMessage && (
-          <p className={`text-sm mt-4 ${Object.keys(errors).length > 0 ? 'text-red-500' : 'text-green-500'}`}>
+        {errors.api && (
+          <p className="text-red-500 text-xs italic mt-4">API Error: {errors.api}</p>
+        )}
+        {formMessage && !errors.api && ( // Only show general form message if no API error
+          <p className={`text-sm mt-4 ${Object.keys(errors).length > 0 && !errors.api ? 'text-red-500' : 'text-green-500'}`}>
             {formMessage}
           </p>
         )}
