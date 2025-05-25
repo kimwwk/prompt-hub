@@ -12,19 +12,29 @@ if (!supabaseAnonKey) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_KEY');
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// const supabase = createClient(supabaseUrl, supabaseAnonKey); // Will create request-scoped client
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { repositoryId: string; versionId: string } }
+  context: { params: { repositoryId: string; versionId: string } }
 ) {
+  const resolvedParams = await context.params; // Await params
   try {
-    const { userId: currentUserId } = await auth();
+    const { userId: currentUserId, getToken } = await auth(); // Get getToken
     if (!currentUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { repositoryId, versionId: targetVersionId } = params;
+    const supabaseToken = await getToken(); // Get Supabase token from Clerk
+    if (!supabaseToken) {
+      return NextResponse.json({ error: 'Failed to get Supabase token' }, { status: 500 });
+    }
+
+    // Create a new Supabase client with the user's token for this request
+    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
+
+    const repositoryId = resolvedParams.repositoryId;
+    const targetVersionId = resolvedParams.versionId;
 
     if (!repositoryId || !targetVersionId) {
       return NextResponse.json({ error: 'Repository ID and Target Version ID are required' }, { status: 400 });
