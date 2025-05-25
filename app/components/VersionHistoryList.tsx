@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import VersionComparisonModal from './VersionComparisonModal'; // Added import
+import VersionComparisonModal from './VersionComparisonModal';
 
 interface Profile {
   full_name: string | null;
@@ -22,9 +22,15 @@ interface Version {
 
 interface VersionHistoryListProps {
   repositoryId: string;
+  onVersionSelect?: (version: Version) => void; // Optional callback for version selection
+  selectedVersionId?: string; // Optional ID of the currently selected version
 }
 
-const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId }) => {
+const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ 
+  repositoryId, 
+  onVersionSelect,
+  selectedVersionId
+}) => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,39 +96,23 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to roll back: ${response.statusText}`);
       }
-      // Refresh versions list
-      // A bit of a delay to allow DB to update if needed, or could re-fetch directly
-      setTimeout(() => {
-         const event = new Event('versionsUpdated'); // Custom event
-         window.dispatchEvent(event);
-         // Re-trigger fetchVersions by changing a dependency or calling it directly
-         // For simplicity, we'll rely on a potential parent component re-render or manual refresh for now
-         // Or, more robustly:
-         setVersions([]); // Clear current versions to force re-fetch if repositoryId dependency is used correctly
-         // Or call fetchVersions directly if it's memoized or safe to call
-         // For now, let's just clear and let useEffect re-fetch
-         // This requires fetchVersions to be callable or part of useEffect dependency
-         // A better way would be to have a refresh function passed as prop or use a state management library
-         // For this example, we'll just log and suggest a manual refresh or implement a simple re-fetch.
-         console.log("Rollback successful, ideally refresh version list here.");
-         // Re-fetch (simple way, might cause multiple calls if not careful)
-         if (repositoryId) { // Re-fetch logic from useEffect
-            const fetchAgain = async () => {
-                setLoading(true); // Show loading for the list
-                const res = await fetch(`/api/repositories/${repositoryId}/versions`);
-                if(res.ok) {
-                    let data = await res.json();
-                    data.sort((a: Version, b: Version) => b.version_number - a.version_number);
-                    setVersions(data);
-                } else {
-                    setError('Failed to refresh versions after rollback.');
-                }
-                setLoading(false);
-            };
-            fetchAgain();
-         }
-      }, 500);
-
+      
+      const newVersion = await response.json();
+      
+      // Re-fetch the versions list
+      const versionsResponse = await fetch(`/api/repositories/${repositoryId}/versions`);
+      if (versionsResponse.ok) {
+        let data = await versionsResponse.json();
+        data.sort((a: Version, b: Version) => b.version_number - a.version_number);
+        setVersions(data);
+        
+        // If onVersionSelect is provided, select the new version
+        if (onVersionSelect && data.length > 0) {
+          // Find the newly created version (the one with highest version number)
+          const newlyCreatedVersion = data[0];
+          onVersionSelect(newlyCreatedVersion);
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during rollback';
       setRollbackError(errorMessage);
@@ -164,7 +154,11 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {versions.map((version) => (
-                <tr key={version.id} className={`${selectedForCompare.find(v => v.id === version.id) ? 'bg-blue-50' : ''}`}>
+                <tr 
+                  key={version.id} 
+                  className={`${selectedForCompare.find(v => v.id === version.id) ? 'bg-blue-50' : ''} 
+                              ${selectedVersionId === version.id ? 'bg-purple-50' : ''}`}
+                >
                   <td className="px-4 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
@@ -174,7 +168,9 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
                       disabled={selectedForCompare.length >= 2 && !selectedForCompare.find(v => v.id === version.id)}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{version.version_number}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {version.version_number}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {version.editor?.full_name || version.editor?.email || 'N/A'}
                   </td>
@@ -189,8 +185,15 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
                     </details>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {/* Placeholder for future actions */}
-                    <button disabled className="text-indigo-600 hover:text-indigo-900 mr-2 opacity-50 cursor-not-allowed">View</button>
+                    {/* View button - select this version for viewing */}
+                    <button 
+                      onClick={() => onVersionSelect && onVersionSelect(version)}
+                      className={`text-indigo-600 hover:text-indigo-900 mr-2 ${!onVersionSelect ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={!onVersionSelect}
+                    >
+                      View
+                    </button>
+                    
                     <button
                       onClick={() => setShowCompareModal(true)}
                       disabled={selectedForCompare.length !== 2}
@@ -198,6 +201,7 @@ const VersionHistoryList: React.FC<VersionHistoryListProps> = ({ repositoryId })
                     >
                       Compare
                     </button>
+                    
                     <button
                       onClick={() => handleRollback(version)}
                       disabled={rollbackLoading === version.id || (versions.length > 0 && version.id === versions[0].id)} // Disable for latest version

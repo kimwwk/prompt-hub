@@ -5,6 +5,9 @@ import { createServerSupabaseClient } from '../../../ssr/client';
 interface RequestBody {
   repoName?: string;
   description?: string;
+  tags?: string[] | null;
+  model_compatibility?: string[] | null;
+  is_public?: boolean;
 }
 
 export async function POST(request: Request) {
@@ -15,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const body: RequestBody = await request.json();
-    const { repoName, description } = body;
+    const { repoName, description, tags, model_compatibility, is_public } = body;
 
     // Server-side validation
     if (!repoName || typeof repoName !== 'string' || repoName.trim().length === 0) {
@@ -27,29 +30,34 @@ export async function POST(request: Request) {
     if (description && (typeof description !== 'string' || description.length > 500)) {
       return NextResponse.json({ error: 'Description cannot exceed 500 characters.' }, { status: 400 });
     }
+    
+    // Validate tags and model_compatibility if provided
+    if (tags && !Array.isArray(tags)) {
+      return NextResponse.json({ error: 'Tags must be an array.' }, { status: 400 });
+    }
+    if (model_compatibility && !Array.isArray(model_compatibility)) {
+      return NextResponse.json({ error: 'Model compatibility must be an array.' }, { status: 400 });
+    }
 
     const supabase = createServerSupabaseClient();
     
     const dataToInsert = {
-      user_id: userId, // Clerk userId is TEXT, matches prompt_repositories.user_id
-      name: repoName!.trim(), // repoName is validated to be non-empty string
-      description: description?.trim() || null, // description is optional
-      is_public: false, // Default to private for now
-      // tags and model_compatibility can be omitted or set to null if not provided
+      user_id: userId,
+      name: repoName!.trim(),
+      description: description?.trim() || null,
+      is_public: typeof is_public === 'boolean' ? is_public : true, // Default to public if not specified
+      tags: tags || null,
+      model_compatibility: model_compatibility || null,
     };
 
     const { data: newRepo, error: dbError } = await supabase
       .from('prompt_repositories')
       .insert(dataToInsert)
       .select()
-      .single(); // Assuming we want to return the single created record
+      .single();
 
     if (dbError) {
       console.error('Supabase DB Error in /api/repo/create:', dbError);
-      // Check for specific errors, e.g., unique constraint violation if one were active
-      // if (dbError.code === '23505') { // Unique violation
-      //   return NextResponse.json({ error: 'A repository with this name already exists for your account.' }, { status: 409 });
-      // }
       return NextResponse.json({ error: 'Failed to create repository in database.', details: dbError.message }, { status: 500 });
     }
 
@@ -58,12 +66,12 @@ export async function POST(request: Request) {
         message: 'Repository created successfully.',
         data: newRepo
       },
-      { status: 201 } // 201 Created
+      { status: 201 }
     );
 
-  } catch (error: any) { // Added type annotation for error
+  } catch (error: any) {
     console.error('Error in /api/repo/create:', error.message, error.stack);
-    if (error instanceof SyntaxError) { // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
         return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
     }
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
