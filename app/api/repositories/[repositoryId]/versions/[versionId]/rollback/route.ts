@@ -12,29 +12,26 @@ if (!supabaseAnonKey) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_KEY');
 }
 
-// const supabase = createClient(supabaseUrl, supabaseAnonKey); // Will create request-scoped client
+// Import createServerSupabaseClient from SSR client
+import { createServerSupabaseClient } from '../../../../../../ssr/client';
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { repositoryId: string; versionId: string } }
-) {
-  const resolvedParams = await context.params; // Await params
+// Use a minimal POST handler with a single parameter
+export async function POST(request: Request) {
   try {
-    const { userId: currentUserId, getToken } = await auth(); // Get getToken
+    // Get user from auth
+    const { userId: currentUserId } = await auth();
     if (!currentUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabaseToken = await getToken(); // Get Supabase token from Clerk
-    if (!supabaseToken) {
-      return NextResponse.json({ error: 'Failed to get Supabase token' }, { status: 500 });
-    }
+    // Extract the repositoryId and versionId from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const repositoryId = pathParts[pathParts.indexOf('repositories') + 1];
+    const targetVersionId = pathParts[pathParts.indexOf('versions') + 1];
 
-    // Create a new Supabase client with the user's token for this request
-    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
-
-    const repositoryId = resolvedParams.repositoryId;
-    const targetVersionId = resolvedParams.versionId;
+    // Create Supabase client using the helper function
+    const supabase = createServerSupabaseClient();
 
     if (!repositoryId || !targetVersionId) {
       return NextResponse.json({ error: 'Repository ID and Target Version ID are required' }, { status: 400 });

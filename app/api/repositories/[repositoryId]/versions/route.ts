@@ -14,7 +14,8 @@ if (!supabaseAnonKey) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_KEY');
 }
 
-// const supabase = createClient(supabaseUrl, supabaseAnonKey); // We will create a request-scoped client
+// Import createServerSupabaseClient from SSR client
+import { createServerSupabaseClient } from '../../../../ssr/client';
 
 interface NewVersionRequestBody {
   prompt_text: string;
@@ -23,25 +24,20 @@ interface NewVersionRequestBody {
   notes?: string;
 }
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { repositoryId: string } } // Changed to use context directly
-) {
-  const resolvedParams = await context.params; // Await the params
+export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth(); // Get getToken from auth
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    // Create a new Supabase client with the user's token for this request
-    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
-      async accessToken() {
-          // Use the server-side auth() to get the token
-          return (await auth()).getToken();
-        },
-    });
     
-    const repositoryId = resolvedParams.repositoryId; // Access repositoryId from resolvedParams
+    // Create Supabase client using the helper function
+    const supabase = createServerSupabaseClient();
+    
+    // Extract repositoryId from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const repositoryId = pathParts[pathParts.indexOf('repositories') + 1];
     if (!repositoryId) {
       return NextResponse.json({ error: 'Repository ID is required' }, { status: 400 });
     }
@@ -100,28 +96,18 @@ export async function POST(
     return NextResponse.json({ error: 'An internal server error occurred', details: errorMessage }, { status: 500 });
   }
 }
-export async function GET(
-  request: NextRequest,
-  context: { params: { repositoryId: string } } // Changed to use context directly
-) {
-  // For GET requests, if RLS allows anon reads, anon client is fine.
-  // If it requires auth for specific user data, you'd need the token method too.
-  // Let's assume for now the GET might be public or use a simpler RLS.
-  // If GET also fails due to RLS on profiles, this will need similar auth context.
-  const supabase = createClient(supabaseUrl!, supabaseAnonKey!); // Standard client for potentially public GET
 
-  const resolvedParams = await context.params; // Await the params
+export async function GET(request: NextRequest) {
   try {
-    // Optional: Add auth check if only authenticated users can view versions
-    // const { userId, getToken } = await auth(); // If GET needs auth
-    // const supabaseToken = await getToken({ template: 'supabase' });
-    // const supabase = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
-    console.log('[GET /api/repositories/[repositoryId]/versions] Resolved Params:', resolvedParams);
-
-    const repositoryId = resolvedParams.repositoryId; // Access repositoryId from resolvedParams
+    // Create standard Supabase client (or use createServerSupabaseClient if auth is needed)
+    const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+    
+    // Extract repositoryId from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const repositoryId = pathParts[pathParts.indexOf('repositories') + 1];
+    
+    console.log('[GET /api/repositories/[repositoryId]/versions] Repository ID:', repositoryId);
     if (!repositoryId) {
       console.error('[GET /api/repositories/[repositoryId]/versions] Repository ID is missing from params');
       return NextResponse.json({ error: 'Repository ID is required' }, { status: 400 });
