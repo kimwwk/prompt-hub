@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import Image from 'next/image';
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSession, SignedIn, SignedOut } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
@@ -37,7 +38,7 @@ export default function Home() {
   }, [searchTerm]);
 
   // Create a custom supabase client that injects the Clerk Supabase token if available
-  function createClerkSupabaseClient() {
+  const createClerkSupabaseClient = useCallback(() => {
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
@@ -48,9 +49,9 @@ export default function Home() {
         },
       }
     );
-  }
+  }, [session]);
 
-  const client = useMemo(() => createClerkSupabaseClient(), [session]);
+  const client = useMemo(() => createClerkSupabaseClient(), [createClerkSupabaseClient]);
 
   useEffect(() => {
     async function loadPublicRepositories(pageToLoad: number, currentSearchTerm: string, currentSelectedTags: string[]) {
@@ -162,9 +163,11 @@ export default function Home() {
             </div>
           </div>
           <div className="md:w-1/2 flex justify-center">
-            <img 
-              src="/hero.png" 
-              alt="Prompt Hub Illustration" 
+            <Image
+              src="/hero.png"
+              alt="Prompt Hub Illustration"
+              width={500}
+              height={500}
               className="max-w-full h-auto rounded-lg shadow-lg"
             />
           </div>

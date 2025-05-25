@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import {
   ClerkProvider,
   SignInButton,
@@ -26,9 +27,11 @@ export default function RootLayout({
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Link href="/" className="flex items-center">
-                  <img 
-                    src="/light-logo.png" 
-                    alt="Prompt Hub Logo" 
+                  <Image
+                    src="/light-logo.png"
+                    alt="Prompt Hub Logo"
+                    width={32}
+                    height={32}
                     className="h-8 w-auto"
                   />
                   <span className="ml-2 text-xl font-semibold text-gray-800">Prompt Hub</span>

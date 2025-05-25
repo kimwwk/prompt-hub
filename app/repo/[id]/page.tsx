@@ -118,7 +118,7 @@ export default function RepositoryDetailPage() {
     }
 
     loadRepositoryDetails();
-  }, [id, session]);
+  }, [id, session, client]);
 
   // Function to handle version selection change
   const handleVersionChange = (version: PromptVersion) => {
@@ -233,7 +233,7 @@ export default function RepositoryDetailPage() {
       <div className="container mx-auto p-4">
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded relative">
           <p className="font-medium">Repository Not Found</p>
-          <p>The repository you're looking for doesn't exist or you don't have permission to view it.</p>
+          <p>The repository you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.</p>
           <button
             onClick={() => router.back()}
             className="mt-4 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-4 rounded transition-colors"
@@ -372,7 +372,7 @@ export default function RepositoryDetailPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
             <h3 className="text-xl font-medium text-gray-700 mb-2">No Versions Yet</h3>
-            <p className="text-gray-500 mb-6">This repository doesn't have any prompt versions yet.</p>
+            <p className="text-gray-500 mb-6">This repository doesn&apos;t have any prompt versions yet.</p>
             
             <SignedIn>
               {isOwner && (
