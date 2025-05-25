@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
-import { useSession } from '@clerk/nextjs';
 
 // Initialize Supabase client
 // Ensure these environment variables are set in your .env.local
@@ -34,14 +33,11 @@ export async function POST(
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const { session } = useSession();
-
     // Create a new Supabase client with the user's token for this request
     const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
       async accessToken() {
-          // Use the default Clerk session token, Supabase will validate it via native integration
-          const supabaseAccessToken = await session?.getToken();
-          return supabaseAccessToken ?? null;
+          // Use the server-side auth() to get the token
+          return (await auth()).getToken();
         },
     });
     

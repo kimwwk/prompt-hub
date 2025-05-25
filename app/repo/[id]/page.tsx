@@ -48,7 +48,8 @@ export default function RepositoryDetailPage() {
   
   const { session } = useSession();
 
-  function createClerkSupabaseClient() {
+  const client = useMemo(() => {
+    // Logic from createClerkSupabaseClient is now inlined here
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
@@ -60,11 +61,6 @@ export default function RepositoryDetailPage() {
         },
       }
     );
-  }
-
-  const client = useMemo(() => {
-    // This function is defined above and uses 'session'
-    return createClerkSupabaseClient();
   }, [session]);
 
   // Load repository details
