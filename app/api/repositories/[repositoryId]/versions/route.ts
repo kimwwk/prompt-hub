@@ -5,16 +5,16 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase client
 // Ensure these environment variables are set in your .env.local
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 
 if (!supabaseUrl) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
 }
 if (!supabaseAnonKey) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_KEY');
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// const supabase = createClient(supabaseUrl, supabaseAnonKey); // We will create a request-scoped client
 
 interface NewVersionRequestBody {
   prompt_text: string;
@@ -25,15 +25,24 @@ interface NewVersionRequestBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { repositoryId: string } }
+  context: { params: { repositoryId: string } } // Changed to use context directly
 ) {
+  const resolvedParams = await context.params; // Await the params
   try {
-    const { userId } = await auth(); // Added await here
+    const { userId, getToken } = await auth(); // Get getToken from auth
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { repositoryId } = params;
+    const supabaseToken = await getToken(); // Get Supabase token from Clerk
+    if (!supabaseToken) {
+      return NextResponse.json({ error: 'Failed to get Supabase token' }, { status: 500 });
+    }
+
+    // Create a new Supabase client with the user's token for this request
+    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
+    
+    const repositoryId = resolvedParams.repositoryId; // Access repositoryId from resolvedParams
     if (!repositoryId) {
       return NextResponse.json({ error: 'Repository ID is required' }, { status: 400 });
     }
@@ -60,24 +69,26 @@ export async function POST(
     }
 
     const newVersionNumber = maxVersionData ? maxVersionData.version_number + 1 : 1;
+    console.log(`[POST /api/repositories/${repositoryId}/versions] Attempting to insert version. UserID from auth(): ${userId}, RepoID: ${repositoryId}, VersionNum: ${newVersionNumber}`); // Log user_id
+
+    const dataToInsert = {
+      repository_id: repositoryId,
+      version_number: newVersionNumber,
+      prompt_text: prompt_text,
+      variables: variables,
+      model_settings: model_settings,
+      user_id: userId, // Clerk user ID
+      notes: notes,
+    };
+    console.log('[POST /api/repositories/[repositoryId]/versions] Data to insert:', JSON.stringify(dataToInsert, null, 2));
 
     // Insert new version
     const { data: newVersion, error: insertError } = await supabase
       .from('prompt_versions')
-      .insert([
-        {
-          repository_id: repositoryId,
-          version_number: newVersionNumber,
-          prompt_text: prompt_text,
-          variables: variables,
-          model_settings: model_settings,
-          user_id: userId, // Clerk user ID
-          notes: notes,
-        },
-      ])
+      .insert([dataToInsert])
       .select()
       .single();
-
+ 
     if (insertError) {
       console.error('Error inserting new version:', insertError);
       return NextResponse.json({ error: 'Failed to create new version', details: insertError.message }, { status: 500 });
@@ -92,20 +103,31 @@ export async function POST(
 }
 export async function GET(
   request: NextRequest,
-  { params }: { params: { repositoryId: string } }
+  context: { params: { repositoryId: string } } // Changed to use context directly
 ) {
+  // For GET requests, if RLS allows anon reads, anon client is fine.
+  // If it requires auth for specific user data, you'd need the token method too.
+  // Let's assume for now the GET might be public or use a simpler RLS.
+  // If GET also fails due to RLS on profiles, this will need similar auth context.
+  const supabase = createClient(supabaseUrl!, supabaseAnonKey!); // Standard client for potentially public GET
+
+  const resolvedParams = await context.params; // Await the params
   try {
     // Optional: Add auth check if only authenticated users can view versions
-    // const { userId } = await auth();
+    // const { userId, getToken } = await auth(); // If GET needs auth
+    // const supabaseToken = await getToken({ template: 'supabase' });
+    // const supabase = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
     // if (!userId) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
+    console.log('[GET /api/repositories/[repositoryId]/versions] Resolved Params:', resolvedParams);
 
-    const { repositoryId } = params;
+    const repositoryId = resolvedParams.repositoryId; // Access repositoryId from resolvedParams
     if (!repositoryId) {
+      console.error('[GET /api/repositories/[repositoryId]/versions] Repository ID is missing from params');
       return NextResponse.json({ error: 'Repository ID is required' }, { status: 400 });
     }
-
+ 
     const { data: versions, error } = await supabase
       .from('prompt_versions')
       .select(`
