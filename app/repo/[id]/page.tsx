@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSession } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import VersionHistoryList from "../../components/VersionHistoryList";
@@ -62,7 +62,10 @@ export default function RepositoryDetailPage() {
     );
   }
 
-  const client = createClerkSupabaseClient();
+  const client = useMemo(() => {
+    // This function is defined above and uses 'session'
+    return createClerkSupabaseClient();
+  }, [session]);
 
   // Load repository details
   useEffect(() => {

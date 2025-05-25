@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
+import { useSession } from '@clerk/nextjs';
 
 // Initialize Supabase client
 // Ensure these environment variables are set in your .env.local
@@ -29,18 +30,20 @@ export async function POST(
 ) {
   const resolvedParams = await context.params; // Await the params
   try {
-    const { userId, getToken } = await auth(); // Get getToken from auth
+    const { userId } = await auth(); // Get getToken from auth
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const supabaseToken = await getToken(); // Get Supabase token from Clerk
-    if (!supabaseToken) {
-      return NextResponse.json({ error: 'Failed to get Supabase token' }, { status: 500 });
-    }
+    const { session } = useSession();
 
     // Create a new Supabase client with the user's token for this request
-    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, { global: { headers: { Authorization: `Bearer ${supabaseToken}` } } });
+    const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
+      async accessToken() {
+          // Use the default Clerk session token, Supabase will validate it via native integration
+          const supabaseAccessToken = await session?.getToken();
+          return supabaseAccessToken ?? null;
+        },
+    });
     
     const repositoryId = resolvedParams.repositoryId; // Access repositoryId from resolvedParams
     if (!repositoryId) {
