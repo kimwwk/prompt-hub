@@ -124,7 +124,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-purple-700 to-purple-900 text-white">
         <div className="container mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0">
+          <div className="mb-8 md:mb-0">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               GitHub for Prompts
             </h1>
@@ -142,27 +142,25 @@ export default function Home() {
               >
                 Explore Prompts
               </Link>
-              <div className="inline-block">
-                <SignedOut>
-                  <Link
-                    href="/sign-in?redirect_url=/repo/create"
-                    className="px-6 py-3 border border-white text-white font-medium rounded-md hover:bg-white hover:bg-opacity-10 transition-colors text-center"
-                  >
-                    Create Prompt
-                  </Link>
-                </SignedOut>
-                <SignedIn>
-                  <Link
-                    href="/repo/create"
-                    className="px-6 py-3 border border-white text-white font-medium rounded-md hover:bg-white hover:bg-opacity-10 transition-colors text-center"
-                  >
-                    Create Prompt
-                  </Link>
-                </SignedIn>
-              </div>
+              <SignedOut>
+                <Link
+                  href="/sign-in?redirect_url=/repo/create"
+                  className="px-6 py-3 border border-white text-white font-medium rounded-md hover:bg-white hover:bg-opacity-10 transition-colors text-center"
+                >
+                  Create Prompt
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <Link
+                  href="/repo/create"
+                  className="px-6 py-3 border border-white text-white font-medium rounded-md hover:bg-white hover:bg-opacity-10 transition-colors text-center"
+                >
+                  Create Prompt
+                </Link>
+              </SignedIn>
             </div>
           </div>
-          <div className="md:w-1/2 flex justify-center">
+          {/* <div className="md:w-1/2 flex justify-center">
             <Image
               src="/hero.png"
               alt="Prompt Hub Illustration"
@@ -170,7 +168,7 @@ export default function Home() {
               height={500}
               className="max-w-full h-auto rounded-lg shadow-lg"
             />
-          </div>
+          </div> */}
         </div>
       </section>
 
