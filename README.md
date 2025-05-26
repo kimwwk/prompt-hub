@@ -1,91 +1,85 @@
-<p align="center">
-  <a href="https://clerk.com?utm_source=github&utm_medium=clerk_docs" target="_blank" rel="noopener noreferrer">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="./public/light-logo.png">
-      <img alt="Clerk Logo for light background" src="./public/dark-logo.png" height="64">
-    </picture>
-  </a>
-  <br />
-</p>
-<div align="center">
-  <h1>
-    Clerk, Supabase, and Next.js App Router Demo
-  </h1>  
-  <a href="https://www.npmjs.com/package/@clerk/clerk-js">
-    <img alt="Downloads" src="https://img.shields.io/npm/dm/@clerk/clerk-js" />
-  </a>
-  <a href="https://discord.com/invite/b5rXHjAg7A">
-    <img alt="Discord" src="https://img.shields.io/discord/856971667393609759?color=7389D8&label&logo=discord&logoColor=ffffff" />
-  </a>
-  <a href="https://twitter.com/clerkdev">
-    <img alt="Twitter" src="https://img.shields.io/twitter/url.svg?label=%40clerkdev&style=social&url=https%3A%2F%2Ftwitter.com%2Fclerkdev" />
-  </a> 
-  <br />
-  <br />
-  <img alt="Clerk Hero Image" src="./public/hero.png">
-</div>
+# Prompt Hub: The GitHub for AI Prompts
 
-## Introduction
+Prompt Hub is an open, community-first platform designed to revolutionize the way AI/LLM prompts are shared, forked, and remixed. By centralizing high-quality prompts in dedicated repositories, Prompt Hub empowers AI enthusiasts, prompt engineers, content creators, and enterprises to collaborate and iterate on proven prompt strategies—reducing the friction of scattered, unorganized resources.
 
-[Clerk](https://clerk.com/) is a developer-first authentication and user management solution. It provides pre-built React components and hooks for sign-in, sign-up, user profile, and organization management. Clerk is designed to be easy to use and customize, and can be dropped into any React or Next.js application.
+## Overview
 
-[Supabase](https://supabase.com/) is an open-source, dedicated PostgreSQL database, trusted by millions of developers.
+Prompt Hub addresses the challenges of discovering and managing effective prompts by offering:
+- **Centralized Storage:** Each prompt is maintained in its own repository complete with a detailed description, usage notes, and an edit history.
+- **Collaboration & Versioning:** Users can fork, edit, and evolve prompts seamlessly, with every change recorded as a new version.
+- **User-Friendly Access:** The platform is open to everyone for browsing, while authenticated users gain the ability to create and modify prompts.
+- **Community Engagement:** With built-in features like starring, copying, and downloading prompts, community feedback continuously drives quality improvements.
 
-Integrating Supabase with Clerk gives you the benefits of using a Supabase database while leveraging Clerk's authentication, prebuilt components, and webhooks. To get the most out of Supabase with Clerk, you must implement custom [Row Level Security](https://supabase.com/docs/guides/auth/row-level-security) (RLS) policies.
+## Core Features
 
-After following [the Clerk + Supabase integration guide](https://clerk.com/docs/integrations/databases/supabase), you will have learned how to:
+1. **Prompt Repositories**
+   - **What:** Every repository holds a single prompt along with its metadata including description, usage guidelines, and version history.
+   - **Why:** This simple “one prompt = one repository” model streamlines discovery and collaboration.
+   - **How:** Users are able to browse, fork, and edit prompts using a clean, intuitive web interface.
 
-- Enable the Supabase integration on your Clerk instance
-- Create RLS policies that restrict access to data based on the user's Clerk ID. This way, users can only access data that belongs to them.
-- Configure Clerk as a Supabase third-party auth provider
-- Use Clerk JWTs to authenticate Supabase queries in your Next.js app
+2. **Versioning & Forking**
+   - **What:** A robust version control system captures every edit with details such as timestamps, editor information, and change summaries.
+   - **Why:** It encourages transparent collaboration and safe experimentation.
+   - **How:** New versions are created on each edit, and forking replicates the latest version into a new, independently modifiable repository.
 
-## Deploy
+3. **Tags & Metadata**
+   - **What:** Prompts are tagged based on model compatibility (e.g., GPT-4, Llama) and domains (e.g., productivity, marketing).
+   - **Why:** Tags help users quickly filter and find the most relevant prompts.
+   - **How:** A simple tagging system integrated with search and filtering mechanisms.
 
-Easily deploy the template to Vercel with the button below. You will need to set the required environment variables in the Vercel dashboard.
+4. **Copy/Download Functionality**
+   - **What:** Users can easily copy prompt texts to the clipboard or download them as .txt files.
+   - **Why:** This reduces friction for users who want to apply prompts immediately in their AI workflows.
+   - **How:** A dedicated UI button provides one-click copy/download capabilities.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fclerk%2Fclerk-supabase-nextjs&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,CLERK_JWT_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_KEY&envLink=https%3A%2F%2Fclerk.com%2Fdocs%2Fdatabases%2Fintegrations%supabase&redirect-url=https%3A%2F%2Fclerk.com%2Fdocs%2Fdatabases%2Fintegrations%supabase)
+5. **Community Engagement**
+   - **What:** Features such as public browsing, star/like functionality, and basic feedback options encourage interaction.
+   - **Why:** Lower barriers to contribution help build a vibrant, collaborative community.
+   - **How:** Even without signing in, users can explore and search through the public repository of prompts.
 
-## Running the template
+## Technical Architecture
 
-```bash
-git clone https://github.com/clerk/clerk-supabase-nextjs
-```
+Prompt Hub is built with modern, scalable technologies:
+- **Frontend:** Developed using Next.js/React, it provides a responsive and accessible interface for browsing and managing prompts.
+- **Backend:** Powered by Supabase (Postgres) which handles data storage for prompt repositories, version histories, and user data.
+- **Authentication:** Managed with Clerk, ensuring secure and efficient user session handling.
+- **Version Control:** Instead of a full Git system, prompt versions are recorded in a lightweight database model that logs every change.
+- **APIs & Integrations:** Supabase auto-generated REST/GraphQL endpoints handle CRUD operations, with scope for future external integrations.
 
-To run the example locally, you need to:
+## Development Insights & Roadmap
 
-1. Sign up for a Clerk account at [https://clerk.com](https://dashboard.clerk.com/sign-up?utm_source=DevRel&utm_medium=docs&utm_campaign=templates&utm_content=clerk-supabase-nextjs).
+Insights from our completed development tasks have shaped the evolution of Prompt Hub:
+- **Repository Setup & Initialization:** Early tasks successfully established the project repository, incorporating a modern Next.js starter with Clerk and Supabase integrations.
+- **User Authentication:** Completed user authentication tasks with Clerk have provided a secure and smooth sign-up/sign-in experience.
+- **Database & Schema Designs:** The database structure for user data, prompt repositories, and prompt versions was implemented based on detailed schema design tasks.
+- **Public Browsing & Search:** Tasks focused on developing the public browsing interface, including list views, detailed repository displays, and advanced filtering mechanisms (tag- and keyword-based).
+- **Prompt Creation & Versioning:** The prompt repository creation workflow has been refined by tasks that ensured a seamless connection between the UI, backend API, and version tracking system.
+- **Metrics:** With approximately 60% of parent tasks and 60% of subtasks completed, the development roadmap is on track, highlighting successful implementations in authentication, database connectivity, and UI features.
 
-2. Go to the [Clerk dashboard](https://dashboard.clerk.com?utm_source=DevRel&utm_medium=docs&utm_campaign=templates&utm_content=clerk-supabase-nextjs) and create an application.
+### Upcoming Enhancements
+- **Advanced Prompt Collections:** Grouping prompts into curated collections for easier discovery.
+- **Enhanced Moderation Tools:** Further refining community quality control through improved moderation capabilities.
+- **AI Integration Improvements:** Facilitating integrations with popular AI tools to enable one-click prompt import and testing.
+- **Refined Version Control Options:** Introducing more nuanced version comparisons and rollback features as the platform matures.
 
-3. Set the required Clerk environment variables as shown in [the example `env.local.example` file](./.env.local.example).
+## Getting Started
 
-4. `npm install` the required dependencies.
+To begin using Prompt Hub:
+1. **Browse:** Explore a diverse array of public prompt repositories.
+2. **Engage:** Sign up or log in to contribute by creating, forking, or editing prompts.
+3. **Adopt:** Utilize the one-click copy/download features for seamless prompt integration into your AI tools.
 
-5. Follow [the Clerk + Supabase integration guide](https://clerk.com/docs/integrations/databases/supabase) to set up your Supabase database.
+## Contributing
 
-6. `npm run dev` to launch the development server.
+We welcome contributions and feedback from the community:
+- **Fork & Contribute:** Improve existing prompts by forking and iterating based on community feedback.
+- **Provide Feedback:** Share insights and report issues to help enhance the platform.
+- **Collaborate:** Join discussions and engage with other users to drive the future roadmap of Prompt Hub.
 
-## Learn more
+## License
 
-To learn more about Clerk and Next.js, check out the following resources:
+Prompt Hub is open source under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
-- [Quickstart: Get started with Next.js and Clerk](https://clerk.com/docs/quickstarts/nextjs?utm_source=DevRel&utm_medium=docs&utm_campaign=templates&utm_content=clerk-supabase-nextjs)
+---
 
-- [Clerk Documentation](https://clerk.com/docs?utm_source=DevRel&utm_medium=docs&utm_campaign=templates&utm_content=clerk-supabase-nextjs)
-- [Next.js Documentation](https://nextjs.org/docs)
-
-## Found an issue or want to leave feedback
-
-Feel free to create a support thread on our [Discord](https://clerk.com/discord). Our support team will be happy to assist you in the `#support` channel.
-
-## Connect with us
-
-You can discuss ideas, ask questions, and meet others from the community in our [Discord](https://discord.com/invite/b5rXHjAg7A).
-
-If you prefer, you can also find support through our [Twitter](https://twitter.com/ClerkDev), or you can [email](mailto:support@clerk.dev) us!
-
-## Others
-
-`ngrok http --url=large-lately-escargot.ngrok-free.app 3000` 
-`task-master list --with-subtasks`
+Join us in transforming prompt sharing into a collaborative and innovative experience!
